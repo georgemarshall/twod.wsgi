@@ -18,6 +18,7 @@ Exceptions raised by :mod:`twod.wsgi.`
 
 """
 
+
 class TwodWSGIException(Exception):
     """Base class for exceptions raised by :mod:`twod.wsgi`."""
     pass
@@ -26,7 +27,5 @@ class TwodWSGIException(Exception):
 class ApplicationCallError(TwodWSGIException):
     """
     Exception raised when an embedded WSGI application was not called properly.
-    
     """
     pass
-

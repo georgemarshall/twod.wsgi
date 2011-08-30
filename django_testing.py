@@ -31,20 +31,19 @@ class DjangoWsgifiedPlugin(Plugin):
     """
     Loads the Django application described by the PasteDeploy configuration URL
     in a WSGI environment suitable for testing.
-    
     """
     enabled = False
-    
+
     name = "django-wsgified"
-    
+
     enableOpt = "paste_config_uri"
-    
+
     def options(self, parser, env):
         help = (
             "Load the Django application described by the PasteDeploy "
             "configuration URI in a WSGI environment suitable for testing."
         )
-        
+
         parser.add_option(
             "--with-%s" % self.name,
             type="string",
@@ -52,7 +51,7 @@ class DjangoWsgifiedPlugin(Plugin):
             dest=self.enableOpt,
             help=help,
             )
-        
+
         parser.add_option(
             "--no-db",
             action="store_true",
@@ -62,33 +61,33 @@ class DjangoWsgifiedPlugin(Plugin):
             # from:
             help="Do not set up a Django test database",
             )
-    
+
     def configure(self, options, conf):
         """Store the URI to the PasteDeploy configuration."""
         super(DjangoWsgifiedPlugin, self).configure(options, conf)
-        
+
         self.paste_config_uri = getattr(options, self.enableOpt)
         self.enabled = bool(self.paste_config_uri)
         self.verbosity = options.verbosity
         self.create_db = not options.no_db
-    
+
     def begin(self):
         loadapp(self.paste_config_uri)
         # It's safe to import from Django at this point. The infamous
         # DJANGO_SETTINGS_MODULE is now set.
-        
+
         # Setting up Django:
         from django.test.utils import setup_test_environment
         setup_test_environment()
-        
+
         # Setting up the database:
         if self.create_db:
             from django.conf import settings
             from django.db import connection
-            
+
             self.db_name = settings.DATABASE_NAME
             connection.creation.create_test_db(self.verbosity, autoclobber=True)
-    
+
     def finalize(self, result=None):
         from django.test.utils import teardown_test_environment
         teardown_test_environment()

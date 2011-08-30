@@ -23,13 +23,13 @@ from zc.recipe.egg import Scripts
 
 
 class DjangoWsgifiedRecipe(Scripts):
-    
+
     def __init__(self, buildout, name, options):
         config_uri = options.pop("paste_config_uri", None)
         if not config_uri:
             raise UserError("Part [%s] must define the PasteDeploy config URI "
                             "in 'paste_config_uri'" % name)
-        
+
         options['initialization'] = _INITIALIZATION % config_uri
         options['arguments'] = "argv=args"
         options['scripts'] = "nosetests"
