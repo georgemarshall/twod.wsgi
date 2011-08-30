@@ -254,7 +254,7 @@ class TestResponse(BaseDjangoTestCase):
         # The original status code should remain integer:
         self.assertEqual(response.status_code, 200)
         # But the reason phrase must still be available:
-        self.assertEqual(response.status_reason, None)
+        self.assertIsNone(response.status_reason)
         # And both must be included in the actual response:
         expected_response = (
             "Content-Type: text/html; charset=utf-8\n"
@@ -273,7 +273,7 @@ class TestResponse(BaseDjangoTestCase):
         status1 = "200 "
         response1 = TwodResponse(body, status=status1)
         self.assertEqual(response1.status_code, 200)
-        self.assertEqual(response1.status_reason, None)
+        self.assertIsNone(response1.status_reason)
         # Testing a status code as string which has a reason:
         status2 = "200 That is right"
         response2 = TwodResponse(body, status=status2)
@@ -348,8 +348,8 @@ class TestStartResponse(unittest.TestCase):
         self.assertTrue(self.original_sr.called)
         self.assertEqual(self.original_sr.status, status)
         self.assertEqual(len(self.original_sr.response_headers), 2)
-        self.assertEqual(self.original_sr.response_headers, response_headers)
-        self.assertEqual(self.original_sr.exc_info, None)
+        self.assertListEqual(self.original_sr.response_headers, response_headers)
+        self.assertIsNone(self.original_sr.exc_info)
 
     def test_with_actual_phrase(self):
         """The status reason must be replaced if it's set in the headers."""
@@ -362,8 +362,8 @@ class TestStartResponse(unittest.TestCase):
         self.assertTrue(self.original_sr.called)
         self.assertEqual(self.original_sr.status, actual_status)
         self.assertEqual(len(self.original_sr.response_headers), 1)
-        self.assertEqual(self.original_sr.response_headers, [("X-Foo", "Whatever")])
-        self.assertEqual(self.original_sr.exc_info, None)
+        self.assertListEqual(self.original_sr.response_headers, [("X-Foo", "Whatever")])
+        self.assertIsNone(self.original_sr.exc_info)
 
 
 #{ Test utilities

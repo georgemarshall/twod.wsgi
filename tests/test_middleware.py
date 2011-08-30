@@ -40,8 +40,8 @@ class TestRoutingArgs(unittest.TestCase):
         self.mw.process_view(self.request, MOCK_VIEW, args, kwargs)
         self.assertIn("wsgiorg.routing_args", self.request.environ)
         self.assertEqual(len(self.request.environ['wsgiorg.routing_args']), 2)
-        self.assertEqual(self.request.environ['wsgiorg.routing_args'][0], args)
-        self.assertEqual(self.request.environ['wsgiorg.routing_args'][1], kwargs)
+        self.assertTupleEqual(self.request.environ['wsgiorg.routing_args'][0], args)
+        self.assertDictEqual(self.request.environ['wsgiorg.routing_args'][1], kwargs)
     
     def test_named_arguments_are_copied(self):
         """
@@ -63,7 +63,7 @@ class TestRoutingArgs(unittest.TestCase):
         args = ("foo", "bar")
         kwargs = {'arg': "value"}
         result = self.mw.process_view(self.request, MOCK_VIEW, args, kwargs)
-        self.assertIsNone(result, None)
+        self.assertIsNone(result)
 
 
 #{ Mock objects

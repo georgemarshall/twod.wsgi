@@ -140,9 +140,7 @@ class TestSettingUpSettings(BaseDjangoTestCase):
         from tests.fixtures import list_module
         
         self.assertEqual(os.environ['DJANGO_SETTINGS_MODULE'], "tests.fixtures.list_module")
-        self.assertEqual(list_module.DA_LIST, (1, 2, 3, 8, 9))
-        
-        
+        self.assertTupleEqual(list_module.DA_LIST, (1, 2, 3, 8, 9))
     
     def test_non_django_settings_module(self):
         """
@@ -188,8 +186,7 @@ class TestSettingsConvertion(unittest.TestCase):
             local_conf = {setting_name: "True"}
             settings = _convert_options(global_conf, local_conf)
             
-            self.assertEqual(settings[setting_name],
-                True,
+            self.assertTrue(settings[setting_name],
                 "%s must be a boolean, but it is %r" % (setting_name,
                                                         settings[setting_name]),
                 )
@@ -203,7 +200,7 @@ class TestSettingsConvertion(unittest.TestCase):
         local_conf = {'mybool': "no"}
         settings = _convert_options(global_conf, local_conf)
         
-        self.assertEqual(settings['mybool'], False)
+        self.assertFalse(settings['mybool'])
         self.assertNotIn("twod.booleans", settings)
     
     def test_official_integers(self):
@@ -239,7 +236,7 @@ class TestSettingsConvertion(unittest.TestCase):
             local_conf = {setting_name: "\n " + "\n    ".join(items)}
             settings = _convert_options(global_conf, local_conf)
             
-            self.assertEqual(settings[setting_name], items,
+            self.assertTupleEqual(settings[setting_name], items,
                 "%s must be a tuple, but it is %r" % (setting_name,
                                                       settings[setting_name]),
                 )
@@ -254,7 +251,7 @@ class TestSettingsConvertion(unittest.TestCase):
         local_conf = {'mytuple': "\n " + "\n    ".join(items)}
         settings = _convert_options(global_conf, local_conf)
         
-        self.assertEqual(settings['mytuple'], items)
+        self.assertTupleEqual(settings['mytuple'], items)
         self.assertNotIn("twod.tuples", settings)
     
     def test_official_nested_tuples(self):
@@ -267,7 +264,7 @@ class TestSettingsConvertion(unittest.TestCase):
             local_conf = {setting_name: "\n " + "\n    ".join(items)}
             settings = _convert_options(global_conf, local_conf)
             
-            self.assertEqual(settings[setting_name], nested_items)
+            self.assertTupleEqual(settings[setting_name], nested_items)
     
     def test_custom_nested_tuple(self):
         """Custom nested tuples should be converted."""
@@ -281,7 +278,7 @@ class TestSettingsConvertion(unittest.TestCase):
         
         settings = _convert_options(global_conf, local_conf)
         
-        self.assertEqual(settings['my_nested_tuple'], nested_items)
+        self.assertTupleEqual(settings['my_nested_tuple'], nested_items)
         self.assertNotIn("twod.nested_tuples", settings)
     
     def test_official_dictionaries(self):
@@ -294,7 +291,7 @@ class TestSettingsConvertion(unittest.TestCase):
             local_conf = {setting_name: "\n " + "\n    ".join(items)}
             settings = _convert_options(global_conf, local_conf)
             
-            self.assertEqual(settings[setting_name], dict_items,
+            self.assertDictEqual(settings[setting_name], dict_items,
                 "%s must be a dict, but it is %r" % (setting_name,
                                                      settings[setting_name]),
                 )
@@ -309,7 +306,7 @@ class TestSettingsConvertion(unittest.TestCase):
         local_conf = {'mydict': "\n " + "\n    ".join(items)}
         settings = _convert_options(global_conf, local_conf)
         
-        self.assertEqual(settings['mydict'], {'foo': "bar", 'baz': "abc", 'xyz': "mno"})
+        self.assertDictEqual(settings['mydict'], {'foo': "bar", 'baz': "abc", 'xyz': "mno"})
         self.assertNotIn("twod.dictionaries", settings)
         
     def test_official_none_if_empty_settings(self):
@@ -402,7 +399,7 @@ class TestSettingsConvertion(unittest.TestCase):
         local_conf = {}
         settings = _convert_options(global_conf, local_conf)
         self.assertIn("DEBUG", settings)
-        self.assertEqual(settings['DEBUG'], True)
+        self.assertTrue(settings['DEBUG'])
     
     def test_no_paste_debug(self):
         """Ensure the "debug" directive for Paste is set."""
@@ -428,7 +425,7 @@ class TestSettingsConvertion(unittest.TestCase):
             local_conf = {setting_name: "\n " + definition}
             settings = _convert_options(global_conf, local_conf)
             
-            self.assertEqual(settings[setting_name], tree_tuple)
+            self.assertTupleEqual(settings[setting_name], tree_tuple)
     
     def test_custom_tree_tuple(self):
         """Custom tree tuples should be converted."""
@@ -452,7 +449,7 @@ class TestSettingsConvertion(unittest.TestCase):
         
         settings = _convert_options(global_conf, local_conf)
         
-        self.assertEqual(settings['my_tree_tuple'], tree_tuple)
+        self.assertTupleEqual(settings['my_tree_tuple'], tree_tuple)
         self.assertNotIn("twod.tree_tuples", settings)
 
 
@@ -474,7 +471,7 @@ class TestTreeTuple(unittest.TestCase):
             )
         
         result = as_tree_tuple(definition)
-        self.assertEqual(result, expected)
+        self.assertTupleEqual(result, expected)
     
     def test_three_levels(self):
         """Generation of three-levels tuples""" 
@@ -487,7 +484,7 @@ class TestTreeTuple(unittest.TestCase):
         expected = ('a', (('aa', 'aaa'), 'ab'))
         
         result = as_tree_tuple(definition)
-        self.assertEqual(result[0], expected)
+        self.assertTupleEqual(result[0], expected)
     
     def test_single_element_with_comma(self):
         """A trailing comma forces tuple creation for single elements""" 
@@ -499,7 +496,7 @@ class TestTreeTuple(unittest.TestCase):
         expected = (('a', ('aa',)), 'b')
         
         result = as_tree_tuple(definition)
-        self.assertEqual(result, expected)
+        self.assertTupleEqual(result, expected)
 
     def test_single_element_without_comma(self):
         """
@@ -513,4 +510,4 @@ class TestTreeTuple(unittest.TestCase):
         expected = (('a', 'aa'), 'b')
         
         result = as_tree_tuple(definition)
-        self.assertEqual(result, expected)
+        self.assertTupleEqual(result, expected)

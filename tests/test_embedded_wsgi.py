@@ -43,7 +43,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         # Checking the environment after calling the WSGI application, but first
         # let's remove WebOb's ad-hoc attributes:
         del request.environ['webob.adhoc_attrs']
-        self.assertEqual(request.environ, expected_environ)
+        self.assertDictEqual(request.environ, expected_environ)
     
     def test_routing_args_are_removed(self):
         """The ``wsgiorg.routing_args`` environment key must be removed."""
@@ -126,7 +126,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         # Running the app:
         app = MockApp("200 OK", headers)
         django_response = call_wsgi_app(app, request, "/wiki")
-        self.assertEqual(expected_headers, django_response._headers)
+        self.assertDictEqual(expected_headers, django_response._headers)
     
     def test_authenticated_user(self):
         environ = complete_environ(SCRIPT_NAME="/dev", PATH_INFO="/trac/wiki")
