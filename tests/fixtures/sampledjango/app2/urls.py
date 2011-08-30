@@ -3,14 +3,14 @@
 URL definitions for the mock Django application.
 
 """
+from __future__ import absolute_import
 
-from django.conf.urls.defaults import patterns
+from django.conf.urls.defaults import patterns, include, url
 
-from tests.fixtures.sampledjango import mock_view
+from .. import mock_view
 
 urlpatterns = patterns('',
-    (r'^secret', mock_view),
-    (r'^nothing', mock_view),
-    )
-
+    url(r'^secret', mock_view),
+    url(r'^nothing', mock_view),
+)
 

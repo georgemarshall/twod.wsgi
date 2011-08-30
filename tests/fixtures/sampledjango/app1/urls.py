@@ -17,13 +17,13 @@
 URL definitions for the mock Django application.
 
 """
+from __future__ import absolute_import
 
-from django.conf.urls.defaults import patterns
-
+from django.conf.urls.defaults import patterns, include, url
 from twod.wsgi import make_wsgi_view
 
-from tests import MockApp
-from tests.fixtures.sampledjango import mock_view
+from .... import MockApp
+from .. import mock_view
 
 app = make_wsgi_view(MockApp("206 One step at a time",
                              [("X-SALUTATION", "Hey")]))
@@ -31,9 +31,9 @@ app = make_wsgi_view(MockApp("206 One step at a time",
 ok_app = make_wsgi_view(MockApp("200 OK", [("X-SALUTATION", "Hey")]))
 
 urlpatterns = patterns('',
-    (r'^blog', mock_view),
-    (r'^admin', mock_view),
-    (r'^secret', mock_view),
-    (r"wsgi-view-ok(/.*)?", ok_app),
-    (r"wsgi-view(/.*)?", app),
-    )
+    url(r'^blog', mock_view),
+    url(r'^admin', mock_view),
+    url(r'^secret', mock_view),
+    url(r"wsgi-view-ok(/.*)?", ok_app),
+    url(r"wsgi-view(/.*)?", app),
+)
