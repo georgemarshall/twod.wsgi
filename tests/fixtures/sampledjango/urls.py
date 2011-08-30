@@ -13,17 +13,18 @@
 # INFRINGEMENT, AND FITNESS FOR A PARTICULAR PURPOSE.
 #
 ##############################################################################
+from __future__ import absolute_import
 
-from django.conf.urls.defaults import *
+from django.conf.urls.defaults import patterns, include, url
 
-from tests.fixtures.sampledjango.app1 import urls as app1_urls
-from tests.fixtures.sampledjango.app2 import urls as app2_urls
+from .app1 import urls as app1_urls
+from .app2 import urls as app2_urls
 
 # Uncomment the next two lines to enable the admin:
 # from django.contrib import admin
 # admin.autodiscover()
 
 urlpatterns = patterns('',
-    (r'^app1/', include(app1_urls)),
-    (r'^app2/', include(app2_urls)),
+    url(r'^app1/', include(app1_urls)),
+    url(r'^app2/', include(app2_urls)),
 )

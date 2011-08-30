@@ -17,13 +17,11 @@
 Tests for the use of WSGI applications within Django.
 
 """
-from nose.tools import eq_, ok_, assert_false, assert_raises
-
 from twod.wsgi import call_wsgi_app, make_wsgi_view
-from twod.wsgi.handler import TwodWSGIRequest
 from twod.wsgi.exc import ApplicationCallError
+from twod.wsgi.handler import TwodWSGIRequest
 
-from tests import (BaseDjangoTestCase, MockApp, MockClosingApp, MockWriteApp,
+from . import (BaseDjangoTestCase, MockApp, MockClosingApp, MockWriteApp,
                    MockGeneratorApp, complete_environ)
 
 
@@ -45,7 +43,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         # Checking the environment after calling the WSGI application, but first
         # let's remove WebOb's ad-hoc attributes:
         del request.environ['webob.adhoc_attrs']
-        eq_(request.environ, expected_environ)
+        self.assertEqual(request.environ, expected_environ)
     
     def test_routing_args_are_removed(self):
         """The ``wsgiorg.routing_args`` environment key must be removed."""
@@ -58,7 +56,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         # Running the app:
         app = MockApp("200 OK", [])
         call_wsgi_app(app, request, "/models")
-        ok_("wsgiorg.routing_args" not in app.environ)
+        self.assertNotIn("wsgiorg.routing_args", app.environ)
     
     def test_webob_adhoc_attrs_are_removed(self):
         """WebOb's ad-hoc attributes must be removed."""
@@ -72,7 +70,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         # Running the app:
         app = MockApp("200 OK", [])
         call_wsgi_app(app, request, "/models")
-        ok_("webob.adhoc_attrs" not in app.environ)
+        self.assertNotIn("webob.adhoc_attrs", app.environ)
     
     def test_mount_point(self):
         environ = complete_environ(SCRIPT_NAME="/dev", PATH_INFO="/trac/wiki")
@@ -80,8 +78,8 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         # Running the app:
         app = MockApp("200 OK", [])
         call_wsgi_app(app, request, "/wiki")
-        eq_(app.environ['SCRIPT_NAME'], "/dev/trac")
-        eq_(app.environ['PATH_INFO'], "/wiki")
+        self.assertEqual(app.environ['SCRIPT_NAME'], "/dev/trac")
+        self.assertEqual(app.environ['PATH_INFO'], "/wiki")
     
     def test_incorrect_mount_point(self):
         """
@@ -95,7 +93,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         path_info = "/trac"
         # Running the app:
         app = MockApp("200 OK", [])
-        assert_raises(ApplicationCallError, call_wsgi_app, app, request,
+        self.assertRaises(ApplicationCallError, call_wsgi_app, app, request,
                       path_info)
     
     def test_http_status(self):
@@ -104,13 +102,13 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         # Running the app and make a valid request:
         app_ok = MockApp("200 Alright", [])
         django_response_ok = call_wsgi_app(app_ok, request, "/wiki")
-        eq_(200, django_response_ok.status_code)
-        eq_("Alright", django_response_ok.status_reason)
+        self.assertEqual(200, django_response_ok.status_code)
+        self.assertEqual("Alright", django_response_ok.status_reason)
         # Running the app and make an invalid request:
         app_bad = MockApp("403 What are you trying to do?", [])
         django_response_bad = call_wsgi_app(app_bad, request, "/wiki")
-        eq_(403, django_response_bad.status_code)
-        eq_("What are you trying to do?", django_response_bad.status_reason)
+        self.assertEqual(403, django_response_bad.status_code)
+        self.assertEqual("What are you trying to do?", django_response_bad.status_reason)
     
     def test_headers_are_copied_over(self):
         environ = complete_environ(SCRIPT_NAME="/dev", PATH_INFO="/trac/wiki")
@@ -128,7 +126,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         # Running the app:
         app = MockApp("200 OK", headers)
         django_response = call_wsgi_app(app, request, "/wiki")
-        eq_(expected_headers, django_response._headers)
+        self.assertEqual(expected_headers, django_response._headers)
     
     def test_authenticated_user(self):
         environ = complete_environ(SCRIPT_NAME="/dev", PATH_INFO="/trac/wiki")
@@ -136,7 +134,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         # Running the app:
         app = MockApp("200 OK", [])
         call_wsgi_app(app, request, "/wiki")
-        eq_("foobar", app.environ['REMOTE_USER'])
+        self.assertEqual("foobar", app.environ['REMOTE_USER'])
     
     def test_cookies_sent(self):
         environ = complete_environ(SCRIPT_NAME="/dev", PATH_INFO="/trac/wiki")
@@ -177,16 +175,16 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         app = MockApp("200 OK", headers)
         django_response = call_wsgi_app(app, request, "/wiki")
         # Checking the cookies:
-        eq_(len(expected_cookies), len(django_response.cookies))
+        self.assertEqual(len(expected_cookies), len(django_response.cookies))
         # Finally, let's check each cookie:
         for (cookie_set_name, cookie_set) in django_response.cookies.items():
             expected_cookie = expected_cookies[cookie_set_name]
             expected_cookie_value = expected_cookie.pop("value")
-            eq_(expected_cookie_value, cookie_set.value,
+            self.assertEqual(expected_cookie_value, cookie_set.value,
                              'Cookie "%s" has a wrong value ("%s")' %
                              (cookie_set_name, cookie_set.value))
             for (attr_key, attr_val) in expected_cookie.items():
-                eq_(cookie_set[attr_key], attr_val,
+                self.assertEqual(cookie_set[attr_key], attr_val,
                                  'Attribute "%s" in cookie %r is wrong (%r)' %
                                  (attr_key, cookie_set_name, cookie_set[attr_key]))
     
@@ -204,7 +202,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
             "\n"
             "body"
             )
-        eq_(http_response, str(django_response))
+        self.assertEqual(http_response, str(django_response))
     
     def test_iterable_as_response(self):
         app = MockGeneratorApp("200 It is OK", [("X-HEADER", "Foo")])
@@ -213,8 +211,8 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         request = _make_request(**environ)
         django_response = call_wsgi_app(app, request, "/posts")
         # Checking the response:
-        assert_false(django_response._is_string)
-        ok_(django_response.has_header("X-HEADER"))
+        self.assertFalse(django_response._is_string)
+        self.assertTrue(django_response.has_header("X-HEADER"))
         http_response = (
             "X-HEADER: Foo\n"
             "Content-Type: text/html; charset=utf-8\n"
@@ -222,7 +220,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
             "\n"
             "body as iterable"
             )
-        eq_(http_response, str(django_response))
+        self.assertEqual(http_response, str(django_response))
     
     def test_write_response(self):
         app = MockWriteApp("200 It is OK", [("X-HEADER", "Foo")])
@@ -231,8 +229,8 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         request = _make_request(**environ)
         django_response = call_wsgi_app(app, request, "/posts")
         # Checking the response:
-        assert_false(django_response._is_string)
-        ok_(django_response.has_header("X-HEADER"))
+        self.assertFalse(django_response._is_string)
+        self.assertTrue(django_response.has_header("X-HEADER"))
         http_response = (
             "X-HEADER: Foo\n"
             "Content-Type: text/html; charset=utf-8\n"
@@ -240,7 +238,7 @@ class TestCallWSGIApp(BaseDjangoTestCase):
             "\n"
             "body as iterable"
             )
-        eq_(http_response, str(django_response))
+        self.assertEqual(http_response, str(django_response))
     
     def test_closure_response(self):
         """The .close() method in the response (if any) must be kept."""
@@ -250,9 +248,9 @@ class TestCallWSGIApp(BaseDjangoTestCase):
         request = _make_request(**environ)
         django_response = call_wsgi_app(app, request, "/posts")
         # Checking the .close() call:
-        assert_false(app.app_iter.closed)
+        self.assertFalse(app.app_iter.closed)
         django_response.close()
-        ok_(app.app_iter.closed)
+        self.assertTrue(app.app_iter.closed)
 
 
 class TestWSGIView(BaseDjangoTestCase):
@@ -276,10 +274,10 @@ class TestWSGIView(BaseDjangoTestCase):
         request = _make_request(**environ)
         # Checking the response:
         django_response = django_view(request, "/foo/bar")
-        eq_(django_response.status_code, 206)
-        eq_(("X-SALUTATION", "Hey"), django_response._headers['x-salutation'])
-        eq_(app.environ['PATH_INFO'], "/foo/bar")
-        eq_(app.environ['SCRIPT_NAME'], "/dev/app1/wsgi-view")
+        self.assertEqual(django_response.status_code, 206)
+        self.assertEqual(("X-SALUTATION", "Hey"), django_response._headers['x-salutation'])
+        self.assertEqual(app.environ['PATH_INFO'], "/foo/bar")
+        self.assertEqual(app.environ['SCRIPT_NAME'], "/dev/app1/wsgi-view")
     
     def test_not_final_path(self):
         """
@@ -296,7 +294,7 @@ class TestWSGIView(BaseDjangoTestCase):
                                    PATH_INFO="/app1/wsgi-view/foo/bar")
         request = _make_request(**environ)
         # Checking the response. Note "/foo" is NOT the end of PATH_INFO:
-        assert_raises(ApplicationCallError, django_view, request, "/foo")
+        self.assertRaises(ApplicationCallError, django_view, request, "/foo")
 
 
 #{ Test utilities
