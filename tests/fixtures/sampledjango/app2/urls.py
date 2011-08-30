@@ -13,4 +13,3 @@ urlpatterns = patterns('',
     url(r'^secret', mock_view),
     url(r'^nothing', mock_view),
 )
-

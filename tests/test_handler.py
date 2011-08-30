@@ -39,10 +39,9 @@ class TestRequest(BaseDjangoTestCase):
     def test_post(self):
         """
         POST arguments must be handled by Django.
-        
+
         Also make sure both Django and WebOb can read the input (i.e., POST
         variables and files uploaded).
-        
         """
         input = urlencode({'foo': "bar", 'bar': "foo"})
         input_length = str(len(input))
@@ -74,7 +73,6 @@ class TestRequest(BaseDjangoTestCase):
     def test_get(self):
         """
         GET arguments must be handled by Django.
-        
         """
         qs = urlencode({'foo': "bar", 'bar': "foo"})
         environ = complete_environ(QUERY_STRING=qs)
@@ -96,7 +94,6 @@ class TestRequest(BaseDjangoTestCase):
         """
         The content length should be set if it wasn't set originally in a
         POST request.
-        
         """
         environ = {
             'REQUEST_METHOD': "POST",
@@ -125,7 +122,6 @@ class TestRequest(BaseDjangoTestCase):
 
         HEAD and GET requests don't have body, but the "wsgi.input" object may
         have been set -- In such situation, no seek must be performed.
-        
         """
         body = StringIO(urlencode({'foo': "bar", 'bar': "foo"}))
 
@@ -154,7 +150,7 @@ class TestRequest(BaseDjangoTestCase):
             'CONTENT_TYPE': "application/x-www-form-urlencoded",
             'wsgi.input': body,
             })
-        
+
         patch_request = TwodWSGIRequest({
             'REQUEST_METHOD': "PATCH",
             'PATH_INFO': "/",
@@ -225,7 +221,6 @@ class TestResponse(BaseDjangoTestCase):
     def test_status_phrase_is_kept(self):
         """
         Unlike Django's, 2degrees' Response objects must kept the status phrase.
-        
         """
         body = "this is the body"
         status = "200 Everything's gonna be alright"
@@ -246,7 +241,6 @@ class TestResponse(BaseDjangoTestCase):
     def test_backwards_compatibility(self):
         """
         The response must behave like Django's unless explicitly told otherwise.
-        
         """
         body = "this is the body"
         status = 200
@@ -266,7 +260,6 @@ class TestResponse(BaseDjangoTestCase):
     def test_status_reason_is_taken_when_available(self):
         """
         The status reason phrase must be taken when it's really set.
-        
         """
         body = "this is the body"
         # Testing a status code as string, but which doesn't have a reason:
@@ -290,9 +283,11 @@ class TestWSGIHandler(BaseDjangoTestCase):
 
     def test_right_request_class(self):
         """The WSGI handler must use Twod's request class."""
+        def start_response(status, response_headers):
+            pass
+
         environ = complete_environ(REQUEST_METHOD="GET",
                                    PATH_INFO="/app1/wsgi-view-ok/")
-        def start_response(status, response_headers): pass
 
         self.handler(environ, start_response)
 
@@ -373,7 +368,6 @@ class TelltaleHandler(DjangoApplication):
     """
     Mock WSGI handler based on Twod's, which is going to be called once and it's
     going to store the request object it got.
-    
     """
 
     def get_response(self, request):
