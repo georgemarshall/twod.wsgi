@@ -19,17 +19,17 @@ Tests for the Django middleware.
 """
 import os
 
-from nose.tools import eq_, ok_
+from django.utils import unittest
 
 from twod.wsgi.middleware import RoutingArgsMiddleware
 
 os.environ['DJANGO_SETTINGS_MODULE'] = "tests.fixtures.sampledjango"
 
 
-class TestRoutingArgs(object):
+class TestRoutingArgs(unittest.TestCase):
     """Tests for the wsgiorg.routing_args middleware."""
     
-    def setup(self):
+    def setUp(self):
         self.mw = RoutingArgsMiddleware()
         self.request = MockRequest({})
     
@@ -38,10 +38,10 @@ class TestRoutingArgs(object):
         args = ("foo", "bar")
         kwargs = {'arg': "value"}
         self.mw.process_view(self.request, MOCK_VIEW, args, kwargs)
-        ok_("wsgiorg.routing_args" in self.request.environ)
-        eq_(len(self.request.environ['wsgiorg.routing_args']), 2)
-        eq_(self.request.environ['wsgiorg.routing_args'][0], args)
-        eq_(self.request.environ['wsgiorg.routing_args'][1], kwargs)
+        self.assertIn("wsgiorg.routing_args", self.request.environ)
+        self.assertEqual(len(self.request.environ['wsgiorg.routing_args']), 2)
+        self.assertEqual(self.request.environ['wsgiorg.routing_args'][0], args)
+        self.assertEqual(self.request.environ['wsgiorg.routing_args'][1], kwargs)
     
     def test_named_arguments_are_copied(self):
         """
@@ -55,15 +55,15 @@ class TestRoutingArgs(object):
         self.mw.process_view(self.request, MOCK_VIEW, ("foo", "bar"), kwargs)
         self.request.environ['wsgiorg.routing_args'][1]['new_arg'] = "new_value"
         # The original dictionary must have not been modified:
-        eq_(len(kwargs), 1)
-        ok_("arg" in kwargs)
+        self.assertEqual(len(kwargs), 1)
+        self.assertIn("arg", kwargs)
     
     def test_no_response(self):
         """A response should never be returned."""
         args = ("foo", "bar")
         kwargs = {'arg': "value"}
         result = self.mw.process_view(self.request, MOCK_VIEW, args, kwargs)
-        ok_(result is None)
+        self.assertIsNone(result, None)
 
 
 #{ Mock objects

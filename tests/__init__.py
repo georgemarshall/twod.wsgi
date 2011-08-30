@@ -21,10 +21,11 @@ from StringIO import StringIO
 import logging
 import os
 
+from django.utils import unittest
 import django.conf
 
 
-class BaseDjangoTestCase(object):
+class BaseDjangoTestCase(unittest.TestCase):
     """
     Base test case to set up and reset the Django settings object.
     
@@ -34,14 +35,14 @@ class BaseDjangoTestCase(object):
     
     setup_fixture = True
     
-    def setup(self):
+    def setUp(self):
         if self.setup_fixture:
             os.environ['DJANGO_SETTINGS_MODULE'] = self.django_settings_module
         # Setting up the logging fixture:
         self.logging_handler = LoggingHandlerFixture()
         self.logs = self.logging_handler.handler.messages
     
-    def teardown(self):
+    def tearDown(self):
         self.logging_handler.undo()
         django.conf.settings = django.conf.LazySettings()
         if "DJANGO_SETTINGS_MODULE" in os.environ:

@@ -19,15 +19,15 @@ Test the set up of the Django applications as WSGI applications.
 """
 import os
 
-from nose.tools import eq_, ok_, assert_false, assert_raises
 from django.core.handlers.wsgi import WSGIHandler
+from django.utils import unittest
 
 from twod.wsgi.appsetup import (wsgify_django, _set_up_settings,
     _convert_options, _DJANGO_BOOLEANS, _DJANGO_INTEGERS,
     _DJANGO_NESTED_TUPLES, _DJANGO_TUPLES, _DJANGO_DICTIONARIES,
     _DJANGO_NONE_IF_EMPTY_SETTINGS, _DJANGO_UNSUPPORTED_SETTINGS)
 
-from tests import BaseDjangoTestCase
+from . import BaseDjangoTestCase
 
 _HERE = os.path.dirname(__file__)
 _FIXTURES = os.path.join(_HERE, "fixtures", "sampledjango")
@@ -49,10 +49,10 @@ class TestDjangoWsgifytor(BaseDjangoTestCase):
             debug="yes",
             )
         
-        ok_(isinstance(app, WSGIHandler))
+        self.assertIsInstance(app, WSGIHandler)
         from django.conf import settings
-        assert_false(settings.DEBUG)
-        eq_(settings.FOO, 10)
+        self.assertFalse(settings.DEBUG)
+        self.assertEqual(settings.FOO, 10)
 
 
 class TestSettingUpSettings(BaseDjangoTestCase):
@@ -76,11 +76,11 @@ class TestSettingUpSettings(BaseDjangoTestCase):
         _set_up_settings(global_conf, local_conf)
         from tests.fixtures import empty_module
         
-        eq_(os.environ['DJANGO_SETTINGS_MODULE'], "tests.fixtures.empty_module")
-        ok_(hasattr(empty_module, "setting1"))
-        ok_(hasattr(empty_module, "setting2"))
-        eq_(empty_module.setting1, local_conf['setting1'])
-        eq_(empty_module.setting2, local_conf['setting2'])
+        self.assertEqual(os.environ['DJANGO_SETTINGS_MODULE'], "tests.fixtures.empty_module")
+        self.assertTrue(hasattr(empty_module, "setting1"))
+        self.assertTrue(hasattr(empty_module, "setting2"))
+        self.assertEqual(empty_module.setting1, local_conf['setting1'])
+        self.assertEqual(empty_module.setting2, local_conf['setting2'])
     
     def test_no_additional_settings(self):
         """
@@ -95,11 +95,11 @@ class TestSettingUpSettings(BaseDjangoTestCase):
         _set_up_settings(global_conf, {})
         from tests.fixtures import empty_module2
         
-        eq_(os.environ['DJANGO_SETTINGS_MODULE'], "tests.fixtures.empty_module2")
+        self.assertEqual(os.environ['DJANGO_SETTINGS_MODULE'], "tests.fixtures.empty_module2")
         # Ignoring the built-in members:
         scope = [value for value in dir(empty_module2)
                  if not value.startswith("__") and value.endswith("__")]
-        eq_(len(scope), 0)
+        self.assertEqual(len(scope), 0)
     
     def test_name_clash(self):
         """
@@ -116,11 +116,11 @@ class TestSettingUpSettings(BaseDjangoTestCase):
         _set_up_settings(global_conf, local_conf)
         from tests.fixtures import one_member_module
         
-        eq_(os.environ['DJANGO_SETTINGS_MODULE'],
+        self.assertEqual(os.environ['DJANGO_SETTINGS_MODULE'],
             "tests.fixtures.one_member_module")
-        eq_(one_member_module.MEMBER, "MEMBER")
-        ok_(len(self.logs['warning']), 1)
-        eq_('"MEMBER" will not be overridden in tests.fixtures.one_member_module',
+        self.assertEqual(one_member_module.MEMBER, "MEMBER")
+        self.assertTrue(len(self.logs['warning']), 1)
+        self.assertEqual('"MEMBER" will not be overridden in tests.fixtures.one_member_module',
             self.logs['warning'][0])
     
     def test_list(self):
@@ -138,8 +138,8 @@ class TestSettingUpSettings(BaseDjangoTestCase):
         _set_up_settings(global_conf, local_conf)
         from tests.fixtures import list_module
         
-        eq_(os.environ['DJANGO_SETTINGS_MODULE'], "tests.fixtures.list_module")
-        eq_(list_module.DA_LIST, (1, 2, 3, 8, 9))
+        self.assertEqual(os.environ['DJANGO_SETTINGS_MODULE'], "tests.fixtures.list_module")
+        self.assertEqual(list_module.DA_LIST, (1, 2, 3, 8, 9))
         
         
     
@@ -151,7 +151,7 @@ class TestSettingUpSettings(BaseDjangoTestCase):
         global_conf = {
             'debug': "yes",
             }
-        assert_raises(ValueError, _set_up_settings, global_conf, {})
+        self.assertRaises(ValueError, _set_up_settings, global_conf, {})
     
     def test_DEBUG_in_python_configuration(self):
         """DEBUG must not be set in the Django settings module."""
@@ -159,7 +159,7 @@ class TestSettingUpSettings(BaseDjangoTestCase):
             'django_settings_module':
                 "tests.fixtures.sampledjango.debug_settings",
             }
-        assert_raises(ValueError, _set_up_settings, global_conf, {})
+        self.assertRaises(ValueError, _set_up_settings, global_conf, {})
     
     def test_non_existing_module(self):
         """
@@ -170,10 +170,10 @@ class TestSettingUpSettings(BaseDjangoTestCase):
             'debug': "yes",
             'django_settings_module': "non_existing_module",
             }
-        assert_raises(ImportError, _set_up_settings, global_conf, {})
+        self.assertRaises(ImportError, _set_up_settings, global_conf, {})
 
 
-class TestSettingsConvertion(object):
+class TestSettingsConvertion(unittest.TestCase):
     """Unit tests for :func:`_convert_options`."""
     
     def test_official_booleans(self):
@@ -187,7 +187,7 @@ class TestSettingsConvertion(object):
             local_conf = {setting_name: "True"}
             settings = _convert_options(global_conf, local_conf)
             
-            eq_(settings[setting_name],
+            self.assertEqual(settings[setting_name],
                 True,
                 "%s must be a boolean, but it is %r" % (setting_name,
                                                         settings[setting_name]),
@@ -202,8 +202,8 @@ class TestSettingsConvertion(object):
         local_conf = {'mybool': "no"}
         settings = _convert_options(global_conf, local_conf)
         
-        eq_(settings['mybool'], False)
-        assert_false("twod.booleans" in settings)
+        self.assertEqual(settings['mybool'], False)
+        self.assertNotIn("twod.booleans", settings)
     
     def test_official_integers(self):
         """Django's integer settings must be converted."""
@@ -212,7 +212,7 @@ class TestSettingsConvertion(object):
             local_conf = {setting_name: 2}
             settings = _convert_options(global_conf, local_conf)
             
-            eq_(settings[setting_name],
+            self.assertEqual(settings[setting_name],
                 2,
                 "%s must be a integer, but it is %r" % (setting_name,
                                                         settings[setting_name]),
@@ -227,8 +227,8 @@ class TestSettingsConvertion(object):
         local_conf = {'myint': "3"}
         settings = _convert_options(global_conf, local_conf)
         
-        eq_(settings['myint'], 3)
-        assert_false("twod.integers" in settings)
+        self.assertEqual(settings['myint'], 3)
+        self.assertNotIn("twod.integers", settings)
     
     def test_official_tuples(self):
         """Django's tuple settings must be converted."""
@@ -238,7 +238,7 @@ class TestSettingsConvertion(object):
             local_conf = {setting_name: "\n " + "\n    ".join(items)}
             settings = _convert_options(global_conf, local_conf)
             
-            eq_(settings[setting_name], items,
+            self.assertEqual(settings[setting_name], items,
                 "%s must be a tuple, but it is %r" % (setting_name,
                                                       settings[setting_name]),
                 )
@@ -253,8 +253,8 @@ class TestSettingsConvertion(object):
         local_conf = {'mytuple': "\n " + "\n    ".join(items)}
         settings = _convert_options(global_conf, local_conf)
         
-        eq_(settings['mytuple'], items)
-        assert_false("twod.tuples" in settings)
+        self.assertEqual(settings['mytuple'], items)
+        self.assertNotIn("twod.tuples", settings)
     
     def test_official_nested_tuples(self):
         """Django's nested tuple settings must be converted."""
@@ -266,7 +266,7 @@ class TestSettingsConvertion(object):
             local_conf = {setting_name: "\n " + "\n    ".join(items)}
             settings = _convert_options(global_conf, local_conf)
             
-            eq_(settings[setting_name], nested_items)
+            self.assertEqual(settings[setting_name], nested_items)
     
     def test_custom_nested_tuple(self):
         """Custom nested tuples should be converted."""
@@ -280,8 +280,8 @@ class TestSettingsConvertion(object):
         
         settings = _convert_options(global_conf, local_conf)
         
-        eq_(settings['my_nested_tuple'], nested_items)
-        assert_false("twod.nested_tuples" in settings)
+        self.assertEqual(settings['my_nested_tuple'], nested_items)
+        self.assertNotIn("twod.nested_tuples", settings)
     
     def test_official_dictionaries(self):
         """Django's dictionary settings must be converted."""
@@ -293,7 +293,7 @@ class TestSettingsConvertion(object):
             local_conf = {setting_name: "\n " + "\n    ".join(items)}
             settings = _convert_options(global_conf, local_conf)
             
-            eq_(settings[setting_name], dict_items,
+            self.assertEqual(settings[setting_name], dict_items,
                 "%s must be a dict, but it is %r" % (setting_name,
                                                      settings[setting_name]),
                 )
@@ -308,8 +308,8 @@ class TestSettingsConvertion(object):
         local_conf = {'mydict': "\n " + "\n    ".join(items)}
         settings = _convert_options(global_conf, local_conf)
         
-        eq_(settings['mydict'], {'foo': "bar", 'baz': "abc", 'xyz': "mno"})
-        assert_false("twod.dictionaries" in settings)
+        self.assertEqual(settings['mydict'], {'foo': "bar", 'baz': "abc", 'xyz': "mno"})
+        self.assertNotIn("twod.dictionaries", settings)
         
     def test_official_none_if_empty_settings(self):
         """Django's settings which are None if unspecified must be converted."""
@@ -319,7 +319,7 @@ class TestSettingsConvertion(object):
             local_conf = {setting_name: ""}
             settings = _convert_options(global_conf, local_conf)
             
-            ok_(settings[setting_name] is None,
+            self.assertIsNone(settings[setting_name],
                 "%s must be NoneType, but it is %r" % (setting_name,
                                                        settings[setting_name]),
                 )
@@ -334,9 +334,9 @@ class TestSettingsConvertion(object):
         local_conf = {'mynone': '', 'mynonewithspace': '    '}
         settings = _convert_options(global_conf, local_conf)
         
-        ok_(settings['mynone'] is None)
-        ok_(settings['mynonewithspace'] is None)
-        assert_false("twod.none_if_empty_settings" in settings)
+        self.assertIsNone(settings['mynone'])
+        self.assertIsNone(settings['mynonewithspace'])
+        self.assertNotIn("twod.none_if_empty_settings", settings)
         
     def test_non_if_empty_non_empty_settings(self):
         """Non-empty 'none if empty' settings are left as strings."""
@@ -349,9 +349,9 @@ class TestSettingsConvertion(object):
                       'mynonewithspace': ' I am a string '}
         settings = _convert_options(global_conf, local_conf)
         
-        eq_(settings['mynone'], 'I am a string')
-        eq_(settings['mynonewithspace'], 'I am a string')
-        assert_false("twod.none_if_empty_settings" in settings)
+        self.assertEqual(settings['mynone'], 'I am a string')
+        self.assertEqual(settings['mynonewithspace'], 'I am a string')
+        self.assertNotIn("twod.none_if_empty_settings", settings)
     
     def test_strings(self):
         """
@@ -363,8 +363,8 @@ class TestSettingsConvertion(object):
         local_conf = {'parameter': "value"}
         settings = _convert_options(global_conf, local_conf)
         
-        ok_("parameter" in settings)
-        eq_(settings['parameter'], "value")
+        self.assertIn("parameter", settings)
+        self.assertEqual(settings['parameter'], "value")
     
     def test_unsupported_settings(self):
         """Unsupported settings are definitely not supported."""
@@ -372,7 +372,7 @@ class TestSettingsConvertion(object):
             global_conf = {'debug': "yes"}
             local_conf = {setting_name: "foo"}
             
-            assert_raises(ValueError, _convert_options, global_conf,
+            self.assertRaises(ValueError, _convert_options, global_conf,
                           local_conf)
     
     def test__file__is_ignored(self):
@@ -382,17 +382,17 @@ class TestSettingsConvertion(object):
         
         settings = _convert_options(global_conf, local_conf)
         
-        ok_("__file__" not in settings)
-        ok_("paste_configuration_file" in settings)
-        eq_(settings['paste_configuration_file'], "somewhere")
+        self.assertNotIn("__file__", settings)
+        self.assertIn("paste_configuration_file", settings)
+        self.assertEqual(settings['paste_configuration_file'], "somewhere")
     
     def test_DEBUG_in_ini_config(self):
         """Django's DEBUG must not be set in the .ini configuration file."""
         bad_conf = {'DEBUG': "True"}
         # Neither in DEFAULTS:
-        assert_raises(ValueError, _convert_options, bad_conf, {})
+        self.assertRaises(ValueError, _convert_options, bad_conf, {})
         # Nor on the application definition:
-        assert_raises(ValueError, _convert_options, {}, bad_conf)
+        self.assertRaises(ValueError, _convert_options, {}, bad_conf)
         
     
     def test_pastes_debug(self):
@@ -400,10 +400,10 @@ class TestSettingsConvertion(object):
         global_conf = {'debug': "true"}
         local_conf = {}
         settings = _convert_options(global_conf, local_conf)
-        ok_("DEBUG" in settings)
-        eq_(settings['DEBUG'], True)
+        self.assertIn("DEBUG", settings)
+        self.assertEqual(settings['DEBUG'], True)
     
     def test_no_paste_debug(self):
         """Ensure the "debug" directive for Paste is set."""
-        assert_raises(ValueError, _convert_options, {}, {})
+        self.assertRaises(ValueError, _convert_options, {}, {})
 
