@@ -20,7 +20,6 @@ Utilities to set up Django applications, both in Web and CLI environments.
 import os
 from logging import getLogger
 
-from paste.deploy.loadwsgi import appconfig
 from paste.deploy.converters import asbool, asint, aslist
 
 from twod.wsgi.handler import DjangoApplication
