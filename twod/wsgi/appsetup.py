@@ -17,12 +17,14 @@
 Utilities to set up Django applications, both in Web and CLI environments.
 
 """
-import os
+from __future__ import absolute_import
+
 from logging import getLogger
+import os
 
 from paste.deploy.converters import asbool, asint, aslist
 
-from twod.wsgi.handler import DjangoApplication
+from .handler import DjangoApplication
 
 
 __all__ = ("wsgify_django", )

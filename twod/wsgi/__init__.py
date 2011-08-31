@@ -15,14 +15,14 @@
 ##############################################################################
 """
 Enhanced WSGI support for Django applications.
-
 """
+from __future__ import absolute_import
 
 # Importing elements that should be available from this namespace:
-from twod.wsgi.handler import DjangoApplication, TwodResponse
-from twod.wsgi.middleware import RoutingArgsMiddleware
-from twod.wsgi.embedded_wsgi import call_wsgi_app, make_wsgi_view
-from twod.wsgi.appsetup import wsgify_django
+from .handler import DjangoApplication, TwodResponse
+from .middleware import RoutingArgsMiddleware
+from .embedded_wsgi import call_wsgi_app, make_wsgi_view
+from .appsetup import wsgify_django
 
 __all__ = ("DjangoApplication", "TwodResponse", "RoutingArgsMiddleware",
            "call_wsgi_app", "make_wsgi_view", "wsgify_django")

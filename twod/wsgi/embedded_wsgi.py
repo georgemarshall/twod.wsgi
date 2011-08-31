@@ -15,13 +15,13 @@
 ##############################################################################
 """
 Utilities to use WSGI applications within Django.
-
 """
+from __future__ import absolute_import
 
 from Cookie import SimpleCookie
 
-from twod.wsgi import TwodResponse
-from twod.wsgi.exc import ApplicationCallError
+from .handler import TwodResponse
+from .exc import ApplicationCallError
 
 
 __all__ = ("call_wsgi_app", "make_wsgi_view")
